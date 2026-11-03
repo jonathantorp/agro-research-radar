@@ -1,6 +1,8 @@
 {
+  "status": "error",
   "last_attempt": "2026-11-03",
   "last_success": null,
-  "status": "not_run",
-  "message": "Direkte automatisk scraping er endnu ikke kørt i dette miljø. Seed-data er kvalitetssikret via offentligt indekserede Pure-poster."
+  "window_start": "2026-08-03",
+  "window_end": "2026-11-03",
+  "message": "Robots.txt ikke tilgængelig (HTTP 404), scraping afbrydes"
 }
