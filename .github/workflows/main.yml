@@ -1,0 +1,66 @@
+name: AGRO Research Radar - ugentlig opdatering
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Onsdag 07:15 UTC = 08:15 i dansk vintertid / 09:15 i sommertid.
+    # GitHub kan forsinke planlagte workflows.
+    - cron: "15 7 * * 3"
+
+concurrency:
+  group: agro-radar-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Hent projekt
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Installer afhængigheder
+        run: python -m pip install -r requirements.txt
+      - name: Kør tests
+        run: python -m unittest discover -v -p "test_*.py"
+      - name: Hent offentlige Pure-oplysninger
+        id: scrape
+        shell: bash
+        run: |
+          set +e
+          python scrape_pure.py --max-pages 100 --delay 1.0
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Pure-kørsel sluttede med exit-kode $code"
+          exit 0
+      - name: AI-vurder nye og ændrede publikationer
+        if: steps.scrape.outputs.code == '0'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5.4-mini
+        run: python rate_ai.py
+      - name: Fjern abstracts fra offentlig JSON
+        if: always()
+        run: python strip_abstracts.py
+      - name: Gem resultater og fejlinformation til Netlify
+        if: always()
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add publications.json sync.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Research Radar: ugentlig status og vurderinger"
+            git push
+          else
+            echo "Intet ændret"
+          fi
