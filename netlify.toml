@@ -1,0 +1,9 @@
+# Netlify publicerer kun dashboardet og offentlige metadata.
+[build]
+  command = "mkdir -p site && cp index.html publications.json sync.json site/"
+  publish = "site"
+
+[[headers]]
+  for = "/*.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
