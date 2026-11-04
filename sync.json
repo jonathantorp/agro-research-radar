@@ -1,8 +1,8 @@
 {
   "status": "error",
-  "last_attempt": "2026-11-03",
+  "last_attempt": "2026-11-04",
   "last_success": null,
-  "window_start": "2026-08-03",
-  "window_end": "2026-11-03",
+  "window_start": "2026-08-04",
+  "window_end": "2026-11-04",
   "message": "Robots.txt ikke tilgængelig (HTTP 404), scraping afbrydes"
 }
